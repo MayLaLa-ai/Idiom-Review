@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國文成語複習系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f5f5f5;
+            border: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 複習頁面樣式 */
+        .review-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .idiom-image {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .idiom-text {
+            font-size: 3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .meaning {
+            font-size: 1.5em;
+            color: #555;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            margin-top: 20px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .meaning.hidden {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .meaning.visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.5s ease;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .progress-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* 管理頁面樣式 */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: 'Microsoft JhengHei', 'Arial', sans-serif;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 15px 50px;
+            font-size: 1.2em;
+            flex: 1;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(17, 153, 142, 0.4);
+        }
+
+        .confirm-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .confirm-btn:hover {
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .idiom-list {
+            margin-top: 40px;
+        }
+
+        .idiom-list h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.8em;
+        }
+
+        .idiom-item {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .idiom-item:hover {
+            transform: translateX(5px);
+        }
+
+        .idiom-item-content {
+            flex: 1;
+        }
+
+        .idiom-item-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .idiom-item-meaning {
+            color: #666;
+            font-size: 1em;
+        }
+
+        .idiom-item-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            color: white;
+            padding: 10px 25px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 10px 25px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(17, 153, 142, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        /* 通知樣式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #4caf50;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        .notification.warning {
+            background: #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 國文成語複習系統</h1>
+            <p>提升成語能力，輕鬆學習</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('review')">複習成語</button>
+            <button class="tab" onclick="switchTab('manage')">管理成語</button>
+        </div>
+
+        <!-- 複習頁面 -->
+        <div id="review" class="tab-content active">
+            <div class="review-card">
+                <img id="cardImage" class="idiom-image" src="" alt="成語圖片">
+                <div id="idiomText" class="idiom-text"></div>
+                <div id="meaning" class="meaning hidden"></div>
+            </div>
+
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="showAnswer()">顯示答案</button>
+                <button class="btn btn-secondary" onclick="nextIdiom()">下一個</button>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span>進度</span>
+                    <span id="progressText">0 / 0</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill" style="width: 0%">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理頁面 -->
+        <div id="manage" class="tab-content">
+            <form id="addForm" class="add-word-form" onsubmit="addIdiom(event)">
+                <div class="form-group">
+                    <label for="idiomName">成語名稱：</label>
+                    <input type="text" id="idiomName" placeholder="例如：畫龍點睛" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="idiomImageUrl">圖片網址：</label>
+                    <input type="url" id="idiomImageUrl" placeholder="https://example.com/image.jpg" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newImage">上傳圖片：</label>
+                    <input type="file" id="newImage" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label for="idiomMeaning">中文意思：</label>
+                    <textarea id="idiomMeaning" placeholder="例如：比喻在關鍵處加上一筆，使整體更為生動精彩" required></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-add add-btn">➕ 新增成語</button>
+                    <button type="button" class="btn btn-add add-btn confirm-btn">確定</button>
+                </div>
+            </form>
+
+            <div class="idiom-list">
+                <h2>成語列表</h2>
+                <div id="idiomListContainer">
+                    <!-- 成語列表將在這裡動態生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知元素 -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // LocalStorage 的鍵名
+        const STORAGE_KEY = 'vocabulary';
+
+        // 預設成語數據
+        const defaultVocabulary = [
+            {
+                word: '畫龍點睛',
+                meaning: '比喻在關鍵處加上一筆，使整體更為生動精彩。出自張僧繇畫龍的故事。',
+                image: 'images/dragon_eye.png'
+            },
+            {
+                word: '守株待兔',
+                meaning: '比喻不知變通，妄想不勞而獲。指死守經驗，不知靈活應變。',
+                image: 'images/tree_rabbit.png'
+            },
+            {
+                word: '刻舟求劍',
+                meaning: '比喻拘泥固執，不知變通。用靜止的眼光看待變化的問題。',
+                image: 'images/boat_sword.png'
+            },
+            {
+                word: '掩耳盜鈴',
+                meaning: '比喻自欺欺人，以為隱瞞事實就可以解決問題。自己欺騙自己。',
+                image: 'images/cover_ear_bell.png'
+            },
+            {
+                word: '井底之蛙',
+                meaning: '比喻見識淺陋，不知道外面世界的廣闊。形容人目光短淺，見識有限。',
+                image: 'images/well_frog.png'
+            }
+        ];
+
+        // 成語數據陣列（從 LocalStorage 讀取）
+        let vocabulary = [];
+
+        // 當前複習的成語索引
+        let currentIndex = 0;
+
+        // 編輯狀態變數
+        let editingIndex = -1; // -1 表示新增模式，>= 0 表示編輯模式的索引
+
+        // 從 LocalStorage 讀取成語列表
+        function loadVocabularyFromStorage() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    vocabulary = JSON.parse(stored);
+                } else {
+                    // 如果 LocalStorage 中沒有資料，使用預設資料並儲存
+                    vocabulary = [...defaultVocabulary];
+                    saveVocabularyToStorage();
+                }
+            } catch (error) {
+                console.error('讀取 LocalStorage 失敗:', error);
+                // 如果讀取失敗，使用預設資料
+                vocabulary = [...defaultVocabulary];
+                saveVocabularyToStorage();
+            }
+        }
+
+        // 將成語列表儲存到 LocalStorage
+        function saveVocabularyToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(vocabulary));
+            } catch (error) {
+                console.error('儲存到 LocalStorage 失敗:', error);
+                showNotification('資料儲存失敗，請檢查瀏覽器設定', 'error');
+            }
+        }
+
+        // 標籤切換功能
+        function switchTab(tabName) {
+            // 隱藏所有標籤內容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // 移除所有標籤按鈕的 active 狀態
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // 顯示選中的標籤內容
+            document.getElementById(tabName).classList.add('active');
+
+            // 為選中的標籤按鈕添加 active 狀態
+            event.target.classList.add('active');
+
+            // 如果切換到管理頁面，更新列表
+            if (tabName === 'manage') {
+                renderIdiomList();
+            }
+
+            // 如果切換到複習頁面，重新載入當前成語
+            if (tabName === 'review') {
+                updateCard();
+            }
+        }
+
+        // 更新成語卡 (updateCard 函式)
+        function updateCard() {
+            if (vocabulary.length === 0) {
+                document.getElementById('idiomText').textContent = '暫無成語';
+                document.getElementById('cardImage').src = '';
+                document.getElementById('meaning').textContent = '';
+                document.getElementById('meaning').classList.add('hidden');
+                updateProgress();
+                return;
+            }
+
+            const currentIdiom = vocabulary[currentIndex];
+            document.getElementById('idiomText').textContent = currentIdiom.word;
+            // 根據當前成語的 image 屬性值來更新圖片
+            if (currentIdiom.image && currentIdiom.image.trim() !== '') {
+                document.getElementById('cardImage').src = currentIdiom.image;
+                document.getElementById('cardImage').style.display = 'block';
+            } else {
+                // 如果沒有圖片，隱藏圖片元素或顯示預設圖片
+                document.getElementById('cardImage').src = '';
+                document.getElementById('cardImage').style.display = 'none';
+            }
+            document.getElementById('meaning').textContent = currentIdiom.meaning;
+            document.getElementById('meaning').classList.add('hidden');
+            updateProgress();
+        }
+
+        // 顯示答案
+        function showAnswer() {
+            if (vocabulary.length === 0) {
+                showNotification('目前沒有成語可以複習', 'warning');
+                return;
+            }
+            const meaningElement = document.getElementById('meaning');
+            meaningElement.classList.remove('hidden');
+            meaningElement.classList.add('visible');
+        }
+
+        // 下一個成語
+        function nextIdiom() {
+            if (vocabulary.length === 0) {
+                showNotification('目前沒有成語可以複習', 'warning');
+                return;
+            }
+
+            // 循環到下一個成語
+            currentIndex = (currentIndex + 1) % vocabulary.length;
+            updateCard();
+        }
+
+        // 更新進度
+        function updateProgress() {
+            if (vocabulary.length === 0) {
+                document.getElementById('progressText').textContent = '0 / 0';
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('progressFill').textContent = '0%';
+                return;
+            }
+
+            const progress = ((currentIndex + 1) / vocabulary.length) * 100;
+            document.getElementById('progressText').textContent = `${currentIndex + 1} / ${vocabulary.length}`;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('progressFill').textContent = `${Math.round(progress)}%`;
+        }
+
+        // 修改成語（將資料填入表單）
+        function editIdiom(index) {
+            const idiom = vocabulary[index];
+            editingIndex = index;
+
+            // 將資料填入表單
+            document.getElementById('idiomName').value = idiom.word;
+            document.getElementById('idiomMeaning').value = idiom.meaning;
+            document.getElementById('idiomImageUrl').value = idiom.image && idiom.image.startsWith('http') ? idiom.image : '';
+            
+            // 如果圖片是 Base64，無法直接顯示在檔案輸入中，所以清空檔案輸入
+            document.getElementById('newImage').value = '';
+
+            // 更新按鈕文字
+            const submitBtn = document.querySelector('.add-btn[type="submit"]');
+            const confirmBtn = document.querySelector('.confirm-btn');
+            if (submitBtn) submitBtn.textContent = '✏️ 更新成語';
+            if (confirmBtn) confirmBtn.textContent = '確定更新';
+
+            // 滾動到表單
+            document.getElementById('addForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // 新增/更新成語
+        function addIdiom(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('idiomName').value.trim();
+            const imageUrl = document.getElementById('idiomImageUrl').value.trim();
+            const meaning = document.getElementById('idiomMeaning').value.trim();
+            const imageFile = document.getElementById('newImage').files[0];
+
+            // 檢查機制：在將新成語推入陣列前，先檢查 vocabulary 陣列中是否已存在相同的成語
+            // 編輯模式下，排除自己
+            const isEditMode = editingIndex >= 0;
+            const hasDuplicate = vocabulary.some((idiom, idx) => 
+                idiom.word === name && (!isEditMode || idx !== editingIndex)
+            );
+
+            if (hasDuplicate) {
+                // 如果重複，顯示警告通知，並取消新增
+                showNotification(`成語「${name}」已存在，無法新增重複的成語！`, 'warning');
+                return;
+            }
+
+            // 處理圖片：優先使用上傳的檔案，其次使用圖片網址，最後使用原有圖片（編輯模式）
+            if (imageFile) {
+                // 使用 FileReader 將圖片轉換為 Base64 格式
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Base64 字串在 e.target.result 中
+                    const base64Image = e.target.result;
+
+                    // 新增或更新成語
+                    const idiomData = {
+                        word: name,
+                        meaning: meaning,
+                        image: base64Image
+                    };
+
+                    if (isEditMode) {
+                        vocabulary[editingIndex] = idiomData;
+                        showNotification('成語更新成功！', 'success');
+                    } else {
+                        vocabulary.push(idiomData);
+                        showNotification('成語新增成功！', 'success');
+                    }
+
+                    // 儲存到 LocalStorage
+                    saveVocabularyToStorage();
+
+                    // 重置表單和編輯狀態
+                    resetForm();
+
+                    // 更新列表
+                    renderIdiomList();
+
+                    // 如果當前在複習頁面，重新載入
+                    if (document.getElementById('review').classList.contains('active')) {
+                        updateCard();
+                    }
+                };
+
+                reader.onerror = function() {
+                    showNotification('圖片讀取失敗，請重試', 'error');
+                };
+
+                // 讀取檔案並轉換為 Base64
+                reader.readAsDataURL(imageFile);
+            } else {
+                // 沒有上傳圖片，使用圖片網址或原有圖片
+                let finalImage = imageUrl || '';
+                if (isEditMode && !imageUrl) {
+                    // 編輯模式下，如果沒有輸入新圖片網址，保留原有圖片
+                    finalImage = vocabulary[editingIndex].image || '';
+                }
+
+                const idiomData = {
+                    word: name,
+                    meaning: meaning,
+                    image: finalImage
+                };
+
+                // 新增或更新成語
+                if (isEditMode) {
+                    vocabulary[editingIndex] = idiomData;
+                    showNotification('成語更新成功！', 'success');
+                } else {
+                    vocabulary.push(idiomData);
+                    showNotification('成語新增成功！', 'success');
+                }
+
+                // 儲存到 LocalStorage
+                saveVocabularyToStorage();
+
+                // 重置表單和編輯狀態
+                resetForm();
+
+                // 更新列表
+                renderIdiomList();
+
+                // 如果當前在複習頁面，重新載入
+                if (document.getElementById('review').classList.contains('active')) {
+                    updateCard();
+                }
+            }
+        }
+
+        // 重置表單和編輯狀態
+        function resetForm() {
+            document.getElementById('addForm').reset();
+            editingIndex = -1;
+            
+            // 恢復按鈕文字
+            const submitBtn = document.querySelector('.add-btn[type="submit"]');
+            const confirmBtn = document.querySelector('.confirm-btn');
+            if (submitBtn) submitBtn.textContent = '➕ 新增成語';
+            if (confirmBtn) confirmBtn.textContent = '確定';
+        }
+
+        // 刪除成語
+        function deleteIdiom(index) {
+            if (confirm(`確定要刪除「${vocabulary[index].word}」嗎？`)) {
+                vocabulary.splice(index, 1);
+
+                // 儲存到 LocalStorage
+                saveVocabularyToStorage();
+
+                // 如果刪除後索引超出範圍，調整當前索引
+                if (currentIndex >= vocabulary.length && vocabulary.length > 0) {
+                    currentIndex = 0;
+                }
+
+                // 更新列表
+                renderIdiomList();
+
+                // 如果在複習頁面，重新載入
+                if (document.getElementById('review').classList.contains('active')) {
+                    updateCard();
+                }
+
+                showNotification('成語已刪除', 'success');
+            }
+        }
+
+        // 渲染成語列表
+        function renderIdiomList() {
+            const container = document.getElementById('idiomListContainer');
+
+            if (vocabulary.length === 0) {
+                container.innerHTML = '<div class="empty-state">目前沒有任何成語，請新增成語開始使用！</div>';
+                return;
+            }
+
+            container.innerHTML = vocabulary.map((idiom, index) => `
+                <div class="idiom-item">
+                    <div class="idiom-item-content">
+                        <div class="idiom-item-title">${idiom.word}</div>
+                        <div class="idiom-item-meaning">${idiom.meaning}</div>
+                    </div>
+                    <div class="idiom-item-buttons">
+                        <button class="btn-edit" onclick="editIdiom(${index})">✏️ 修改</button>
+                        <button class="btn-delete" onclick="deleteIdiom(${index})">🗑️ 刪除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 顯示通知
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // updateWordList 函數（作為 renderIdiomList 的別名）
+        function updateWordList() {
+            renderIdiomList();
+        }
+
+        // 頁面載入時初始化
+        window.onload = function() {
+            // 從 LocalStorage 載入成語列表
+            loadVocabularyFromStorage();
+            // 載入當前成語和渲染列表
+            updateCard();
+            renderIdiomList();
+
+            // 為 .confirm-btn 新增事件監聽器（複製 addIdiom 的邏輯）
+            const confirmBtn = document.querySelector('.confirm-btn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    
+                    // 直接調用 addIdiom 函數的邏輯，但需要手動觸發
+                    // 創建一個模擬事件對象
+                    const fakeEvent = { preventDefault: function() {} };
+                    addIdiom(fakeEvent);
+                });
+            }
+        };
+    </script>
+</body>
+</html>
+
